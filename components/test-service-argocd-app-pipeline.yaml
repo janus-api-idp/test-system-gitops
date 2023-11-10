@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-service-pipeline
+  namespace: openshift-gitops
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/janus-api-idp/test-service
+    targetRevision: HEAD
+    path: .tekton
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: test-system-build
+  syncPolicy:
+    automated: 
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=false
+    - RespectIgnoreDifferences=true
+    - ApplyOutOfSyncOnly=true
+    retry:
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 10m
